@@ -1,5 +1,5 @@
-# Music_Style_Transfer
-Project repository for music style transfer with Neural Network.(2020.03 ~ )
+
+Music_Style_TransferProject repository for music style transfer with Neural Network.(2020.03 ~ )
 
 ### Team member
 Kyojung Koo, SangHyung Jung, Hyun Lee
@@ -38,7 +38,7 @@ It wasn't the first idea that came out, but I thought it would be reasonable to 
 
 I conducted the Audio Source Segmentation using the pre-train model, which was released from the best metric-learing thesis, and the results were satisfactory.
 
-## 3. 3. Audio Reconstruction
+## 3. Audio Reconstruction
 
 The first thing I thought of was domain transfer from the Frequency domain, so I needed to rebuild it back to the waveform. The algorithm used here mainly uses Griffin-Lim, which was published in 1984. However, I studied the following paper for better results in the solution criteria.
 
