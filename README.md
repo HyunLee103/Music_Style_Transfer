@@ -1,8 +1,9 @@
 # Music_Style_Transfer
 Project repository for music style transfer with Neural Network.(2020.03 ~ )
 
-# Team member
+### Team member
 Kyojung Koo, SangHyung Jung, Hyun Lee
+
 
 # Overview
 Aim to create an artificial neural network that changes music style, eg) Beatles-hey jude -> hey jude Jazz ver.
