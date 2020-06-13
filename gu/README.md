@@ -29,6 +29,5 @@ So, ignore it. bye!
 
 ### Model
 using Wavenet  
-![model](https://raw.githubusercontent.com/Boaz-Music-Transformation/Music_style_transform/koo/koo/fig/A%20Universal%20Music%20Translation%20Network%20-%20model.png)
-
+![model](https://github.com/HyunLee103/Music_Style_Transfer/blob/master/gu/fig/A%20Universal%20Music%20Translation%20Network%20-%20model.png?raw=true)
 - Shared encoder + independant decoder + source discriminator  
