@@ -2,7 +2,7 @@
 Music_Style_TransferProject repository for music style transfer with Neural Network.(2020.03 ~ )
 
 ### Team member
-Kyojung Koo, SangHyung Jung, Hyun Lee
+Kyojung Koo(https://github.com/koo616) ,Sanghyung Jung(https://github.com/SangHyung-Jung), Hyun Lee
 
 
 # Overview
