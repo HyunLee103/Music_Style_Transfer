@@ -42,7 +42,7 @@ I conducted the Audio Source Segmentation using the pre-train model, which was r
 
 The first thing I thought of was domain transfer from the Frequency domain, so I needed to rebuild it back to the waveform. The algorithm used here mainly uses Griffin-Lim, which was published in 1984. However, I studied the following paper for better results in the solution criteria.
 
-1) Signal Evaluation from Modified Short-time Fourier Transform (Gripin-Lim)
+1) Signal Evaluation from Modified Short-time Fourier Transform (Griffin-Lim)
 
 2) WaveNet
 
