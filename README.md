@@ -50,4 +50,7 @@ The first thing I thought of was domain transfer from the Frequency domain, so I
 
 2)WaveNet is an un-supervised model that generates waveform in time domain. It is applied in various fields, and in the 4)Timbretron paper, it was used instead of griffin-lim in the audio reconstruction, which was considered above, and it was said that the performance was better. 5) In Universal Music Translation, Auto-encoder is created using WaveNet.
 
-As mentioned above, Audio reconstruction is necessary for transferring in the Frequency domain, and it is unnecessary because the waveform form is maintained in the time domain.
+As mentioned above, Audio reconstruction is necessary for transferring in the Frequency domain, and it is unnecessary because the waveform form is maintained in the time domain.  
+
+# Dataset
+100 songs by genre sampled from gtzan dataset(http://marsyas.info/downloads/datasets.html) and melon, a total of 200 songs. Similar characteristics were maintained within one genre while sampling to reflect characteristics that can be distinguished from other genres.
