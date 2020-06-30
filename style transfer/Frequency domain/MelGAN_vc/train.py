@@ -1,4 +1,6 @@
-## Define Loss
+from model import *
+from dataset import *
+
 def mae(x,y):
     return torch.mean(torch.abs(x - y))
 
@@ -29,39 +31,24 @@ def d_loss_r(real):
 def g_loss_f(fake):
     return torch.mean(-fake)
 
-## optimizer, model 설정
 
-G = Generator((hop,48,1)).to(device)
-S = Siamese((hop,48,1)).to(device)
-D = Discriminator((hop,96,1)).to(device)
-
-#Generator loss is a function of 
-params = list(G.parameters()) + list(S.parameters())
-opt_gen = optim.Adam(params, lr=1e-5)
-
-opt_disc = optim.SGD(D.parameters(), lr=1e-5)
-
-#Set learning rate
-def update_lr(gen_lr, dis_lr):
-    opt_gen.lr = gen_lr
-    opt_disc.lr = dis_lr
-
-## train_All
-
+#functions to be written here
 def train_all(a,b):
     #splitting spectrogram in 3 parts
-    aa,aa2 = extract_image(a) 
-    bb,bb2 = extract_image(b)
+    a1,a2,a3 = extract_image(a) 
+    
+    b1,b2,b3 = extract_image(b)
 
     #gen.zero_grad()
     #critic.zero_grad()
     #siam.zero_grad()
     
-    opt_gen.zero_grad()
+    optimG.zero_grad()
 
     #translating A to B
-    fab = G.forward(aa)
-    fab2 = G.forward(aa2)
+    g_a1 = netG.forward(a1)
+    g_a2 = netG.forward(a2)
+    g_a3 = netG.forward(a3)
     
     #identity mapping B to B  COMMENT THESE 3 LINES IF THE IDENTITY LOSS TERM IS NOT NEEDED
     #fid = gen.forward(bb)
@@ -69,114 +56,193 @@ def train_all(a,b):
     #fid3 = gen.forward(bb3)
     
     #concatenate/assemble converted spectrograms
-    fabtot = assemble_image([fab,fab2])
+    g_a_total = assemble_image([g_a1,g_a2,g_a3])
 
     #feed concatenated spectrograms to critic
-    cab = D.forward(fabtot) # D(G(x))
-    cb = D.forward(b)       # D(y)
+    fake = netD.forward(g_a_total)
+    real = netD.forward(b)
 
     #feed 2 pairs (A,G(A)) extracted spectrograms to Siamese
-    sab = S.forward(fab)
-    sab2 = S.forward(fab2)
-    sa = S.forward(aa)
-    sa2 = S.forward(aa2)
+    s_ga1 = netS.forward(g_a1)
+    s_ga2 = netS.forward(g_a3)
+    s_a1 = netS.forward(a1)
+    s_a2 = netS.forward(a3)
 
     #identity mapping loss
     #loss_id = (mae(bb,fid)+mae(bb2,fid2)+mae(bb3,fid3))/3.      #loss_id = 0. IF THE IDENTITY LOSS TERM IS NOT NEEDED
     #travel loss
-    loss_travel_temp = loss_travel(sa,sab,sa2,sab2)
-    loss_siamese_temp = loss_siamese(sa,sa2)
+    loss_travel_temp = loss_travel(s_a1,s_ga1,s_a2,s_ga2)
+    loss_siamese_temp = loss_siamese(s_a1,s_a2)
     loss_m = loss_travel_temp + loss_siamese_temp
     print("Loss m: ", loss_m)
     #get gen and siam loss and bptt
-    loss_g = g_loss_f(cab)
+    loss_g = g_loss_f(fake)
     print("Loss g: ", loss_g)
     lossgtot = loss_g+10.*loss_m #+0.5*loss_id #CHANGE LOSS WEIGHTS HERE  (COMMENT OUT +w*loss_id IF THE IDENTITY LOSS TERM IS NOT NEEDED)
 
-    lossgtot.backward()  # G, S 로 backpropa
-    #for idx, i in enumerate(params):
-    #    print("Param ", idx, ":")
-    #    print(i.grad)
-    opt_gen.step()       # G, S update
+    lossgtot.backward()
+    optimG.step()
     
     #get critic loss and bptt
-    opt_disc.zero_grad()
+    optimD.zero_grad()
 
-    loss_dr = d_loss_r(cb) 
-    loss_df = d_loss_f(cab) 
+    loss_dr = d_loss_r(real)
+    loss_df = d_loss_f(fake)
     loss_d = (loss_dr+loss_df)/2.
 
     print("Loss d: ", loss_d)
     loss_d.backward()
-    #for idx, i in enumerate(critic.parameters()):
-    #    print("Param ", idx, ":")
-    #    print(i.grad)
-    opt_disc.step()
+    optimD.step()
     
     return loss_dr,loss_df,loss_g,loss_d
 
-## train D
-
 def train_d(a,b):
-    opt_disc.zero_grad()
+    optimD.zero_grad()
     
-    aa,aa2, = extract_image(a)
+    a1,a2,a3 = extract_image(a)
     
     #translating A to B
-    fab = G.forward(aa)
-    fab2 = G.forward(aa2)
+    g_a1 = netG.forward(a1)
+    g_a2 = netG.forward(a2)
+    g_a3 = netG.forward(a3)
     #concatenate/assemble converted spectrograms
-    fabtot = assemble_image([fab,fab2])
+    g_a_total = assemble_image([g_a1,g_a2,g_a3])
 
     #feed concatenated spectrograms to critic
-    cab = D.forward(fabtot)
-    cb = D.forward(b)
+    fake = critic.forward(g_a_total)
+    real = critic.forward(b)
 
     #get critic loss and bptt
-    loss_dr = d_loss_r(cb)
-    loss_df = d_loss_f(cab)
+    loss_dr = d_loss_r(real)
+    loss_df = d_loss_f(fake)
     loss_d = (loss_dr+loss_df)/2.
     # loss_d = torch.autograd.Variable(loss_d, requires_grad = True)
     
     loss_d.backward()
-    opt_disc.step()
+    optimD.step()
 
     return loss_dr,loss_df
 
-## 최종 train
+def train(args):
+    ## 트레이닝 파라메터 설정하기
+    mode = args.mode
+    gen_lr = args.g_lr
+    dis_lr = args.d_lr
+    batch_size = args.batch_size
+    num_epoch = args.num_epoch
 
-def train(epochs, batch_size=16, gen_lr=1e-5, dis_lr=1e-5, n_save=6, gupt=5):
-  
-    update_lr(gen_lr, dis_lr)
-    df_list = []
-    dr_list = []
-    g_list = []
-    id_list = []
-    c = 0
-    g = 0
-  
-    for epoch in range(epochs):
-        for batchi,(a,b) in enumerate(zip(a_loader,b_loader)):
-            #only train discriminator every gupt'th batch
-            if batchi%gupt==0:
-                dloss_t,dloss_f,gloss,idloss = train_all(a,b)
-            else:
-                dloss_t,dloss_f = train_d(a,b)
+    data_dir = args.data_dir
+    data_dir = args.data_dir
+    ckpt_dir = args.ckpt_dir
+    log_dir = args.log_dir
+    result_dir = args.result_dir
 
-            df_list.append(dloss_f)
-            dr_list.append(dloss_t)
-            g_list.append(gloss)
-            id_list.append(idloss)
-            c += 1
-            g += 1
+    gupt = args.gupt  #only train discriminator every gupt'th batch
+    train_continue = args.train_continue
 
-            if batchi%600==0:
-                # print(f'[Epoch {epoch}/{epochs}] [Batch {batchi}] [D loss f: {np.mean(df_list[-g:], axis=0)} ', end='')
-                # print(f'r: {np.mean(dr_list[-g:], axis=0)}] ', end='')
-                # print(f'[G loss: {np.mean(g_list[-g:], axis=0)}] ', end='')
-                # print(f'[ID loss: {np.mean(id_list[-g:])}] ', end='')
-                # print(f'[LR: {lr}]')
-                g = 0
-            nbatch=batchi
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-        c = 0
+    print("mode: %s" % mode)
+
+    print("G_learning rate: %.4e" % gen_lr)
+    print("D_learning rate: %.4e" % dis_lr)
+    print("batch size: %d" % batch_size)
+    print("number of epoch: %d" % num_epoch)
+
+    print("data dir: %s" % data_dir)
+    print("ckpt dir: %s" % ckpt_dir)
+    print("log dir: %s" % log_dir)
+    print("result dir: %s" % result_dir)
+
+    print("device: %s" % device)
+
+    ## 데이터 load
+    jazz_gtzan = np.load(os.path.join(data_dir,'jazz_other_mel_gtzan.npy'))
+    jazz_melon = np.load(os.path.join(data_dir,'jazz_other_mel_melon.npy'))
+    rock_gtzan = np.load(os.path.join(data_dir,'rock_other_mel_gtzan.npy'))
+    rock_melon = np.load(os.path.join(data_dir,'rock_other_mel_melon.npy'))
+
+    jazz_all = np.concatenate((jazz_gtzan,jazz_melon))
+    rock_all = np.concatenate((rock_gtzan,rock_melon))
+
+    a_dataset = AudioDataset(jazz_all, hop=hop, shape=shape)
+    a_loader = DataLoader(dataset=a_dataset,batch_size=batch_size,shuffle=True)
+
+    b_dataset = AudioDataset(rock_all, hop=hop, shape=shape)
+    b_loader = DataLoader(dataset=b_dataset,batch_size=batch_size,shuffle=True)
+
+    ## 네트워크 생성
+    netG = Generator((hop,shape,1)).to(device)
+    netS = Siamese((hop,shape,1)).to(device)
+    netD = Discriminator((hop,3*shape,1)).to(device)
+
+    #Generator loss is a function of 
+    params = list(netG.parameters()) + list(netS.parameters())
+
+    optimG = optim.Adam(params, lr=gen_lr)
+    optimD = optim.SGD(critic.parameters(), lr=dis_lr)
+
+
+    st_epoch = 0
+
+    if mode == 'train':
+        if train_continue == "on": # 이어서 학습할때 on, 처음 학습 시킬때는 off
+            netG,netD,netS, optimG,optimD, st_epoch = load(ckpt_dir=ckpt_dir, netG=netG,netD=netD, optimG=optimG,optimD=optimD)
+
+
+        update_lr(gen_lr, dis_lr)
+        df_list = []
+        dr_list = []
+        g_list = []
+        id_list = []
+        g = 0
+    
+        for epoch in range(num_epoch):
+            for batchi,(a,b) in enumerate(zip(a_loader,b_loader)):
+
+                if batchi%gupt==0:
+                    dloss_t,dloss_f,gloss,idloss = train_all(a,b)
+                else:
+                    dloss_t,dloss_f = train_d(a,b)
+
+                df_list.append(dloss_f)
+                dr_list.append(dloss_t)
+                g_list.append(gloss)
+                id_list.append(idloss)
+                g += 1
+
+                if batchi % 100==0:
+                    print('[Epoch : {}/{}] [Batch : {}] [D loss f: {}]'.format(epoch,num_epoch,batchi,(sum(df_list[-g:])/len(df_list[-g:]))), end=' ')
+                    print('D_loss_T : {}]'.format((sum(dr_list[-g:])/len(dr_list[-g:]))), end=' ')
+                    print('[G loss: {}]'.format((sum(g_list[-g:])/len(g_list[-g:]))), end=' ')
+                    print('[ID loss: {}]'.format((sum(id_list[-g:])/len(id_list[-g:]))), end=' ')
+                    g = 0
+
+            if epoch % 100 == 0:
+                save(ckpt_dir=ckpt_dir, netG=netG, netD = netD,netS=netS ,optimG=optimG, optimD=optimD, epoch=epoch)
+
+    if mode == 'test':
+        netG, netD,netS, optimG, optimD, st_epoch = load(ckpt_dir=ckpt_dir, netG=netG,netS=netS ,netD = netD, optimG=optimG, optimD = optimD)
+
+        test_data = np.load(os.path.join(data_dir,'testset.npy'))
+        dataset_test = AudioDataset(test_data, hop=hop, shape=shape)
+        loader_test = DataLoader(dataset=dataset_test,batch_size=batch_size,shuffle=True) 
+
+        with torch.no_grad():
+            netG.eval()
+
+            Loss = []
+
+            for batch, data in enumerate(loader_test,1):
+                a1,a2,a3 = extract_image(a) 
+
+                #translating A to B
+                g_a1 = netG.forward(a1)
+                g_a2 = netG.forward(a2)
+                g_a3 = netG.forward(a3)
+
+                g_a_total = assemble_image([g_a1,g_a2,g_a3])
+
+
+
+
