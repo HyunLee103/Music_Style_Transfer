@@ -14,8 +14,8 @@ parser.add_argument("--d_lr", default=1e-5, type=float, dest="d_lr")
 parser.add_argument("--batch_size", default=16, type=int, dest="batch_size")
 parser.add_argument("--num_epoch", default=300, type=int, dest="num_epoch")
 
-parser.add_argument("--data_dir", default="./datasets/BSR/BSDS500/data/images", type=str, dest="data_dir")
-parser.add_argument("--ckpt_dir", default="./checkpoint", type=str, dest="ckpt_dir")
+parser.add_argument("--data_dir", default="./dataset", type=str, dest="data_dir")
+parser.add_argument("--ckpt_dir", default="./ckpt", type=str, dest="ckpt_dir")
 parser.add_argument("--log_dir", default="./log", type=str, dest="log_dir")
 parser.add_argument("--result_dir", default="./result", type=str, dest="result_dir")
 
