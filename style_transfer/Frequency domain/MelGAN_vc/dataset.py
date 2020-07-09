@@ -30,14 +30,9 @@ from tensordot import tensordot_pytorch
 ## Hyper parameters
 
 hop = 192
-sr = 16000
-min_level_db = -100
-ref_level_db = 20
-
-shape = 24    # length of time axis of split spectrograms to G
-vec_len = 128 # siamese vector length
-bs = 20       # batch size
-delta = 2.    # constant for siamese loss 
+sr = 22050
+shape = 96    # length of time axis of split spectrograms to G
+ 
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 

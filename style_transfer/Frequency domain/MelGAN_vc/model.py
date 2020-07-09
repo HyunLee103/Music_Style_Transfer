@@ -13,14 +13,14 @@ class Generator(nn.Module):
 
         #downscaling
         self.enc1 = CBR2d(c, 64, kernel_size=4, stride=2, padding=1 ,norm=None,relu=0.2)
-        self.enc2 = CBR2d(64, 128, kernel_size=4, stride=2, padding=1 ,norm='bnorm',relu=0.2)
-        self.enc3 = CBR2d(128, 256, kernel_size=4, stride=2, padding=1 ,norm='bnorm',relu=0.2)
-        self.enc4 = CBR2d(256, 256, kernel_size=4, stride=2, padding=1 ,norm='bnorm',relu=0.2)
+        self.enc2 = CBR2d(64, 128, kernel_size=4, stride=2, padding=1 ,norm='inorm',relu=0.2)
+        self.enc3 = CBR2d(128, 256, kernel_size=4, stride=2, padding=1 ,norm='inorm',relu=0.2)
+        self.enc4 = CBR2d(256, 256, kernel_size=4, stride=2, padding=1 ,norm='inorm',relu=0.2)
         
         #upscaling
-        self.dec1 = DECBR2d(256,256,kernel_size=4,padding=1,stride=2,norm='bnorm',relu=0.2)
-        self.dec2 = DECBR2d(512,128,kernel_size=4,padding=1,stride=2,norm='bnorm',relu=0.2)
-        self.dec3 = DECBR2d(256,64,kernel_size=4,padding=1,stride=2,norm='bnorm',relu=0.2)
+        self.dec1 = DECBR2d(256,256,kernel_size=4,padding=1,stride=2,norm='inorm',relu=0.2)
+        self.dec2 = DECBR2d(512,128,kernel_size=4,padding=1,stride=2,norm='inorm',relu=0.2)
+        self.dec3 = DECBR2d(256,64,kernel_size=4,padding=1,stride=2,norm='inorm',relu=0.2)
         self.dec4 = DECBR2d(128,c,kernel_size=4,padding=1,stride=2,norm=None,relu=None) 
   
     def forward(self, x):
@@ -101,8 +101,8 @@ class Discriminator(nn.Module):
         
 
         self.g1 = CBR2d(c, 64, kernel_size=4, stride=2, padding=1 ,norm=None,relu=0.2)
-        self.g2 = CBR2d(64, 128, kernel_size=4, stride=2, padding=1 ,norm='bnorm',relu=0.2)
-        self.g3 = CBR2d(128, 256, kernel_size=4, stride=2, padding=1 ,norm='bnorm',relu=0.2)
+        self.g2 = CBR2d(64, 128, kernel_size=4, stride=2, padding=1 ,norm='inorm',relu=0.2)
+        self.g3 = CBR2d(128, 256, kernel_size=4, stride=2, padding=1 ,norm='inorm',relu=0.2)
         self.g4 = DenseSN(input_shape=73728)
         
     def forward(self, x):
