@@ -10,6 +10,7 @@ import torch.nn as nn
 from torchvision import transforms
 # from torch.utils.tensorboard import SummaryWriter
 import matplotlib.pyplot as plt
+import librosa
 
 
 class Train:
@@ -100,22 +101,11 @@ class Train:
 
             return netG_a2b, netG_b2a, epoch
 
-    def preprocess(self, data):
-        normalize = Normalize()
-        randflip = RandomFlip()
-        rescale = Rescale((self.ny_load, self.nx_load))
-        randomcrop = RandomCrop((self.ny_out, self.nx_out))
-        totensor = ToTensor()
-        return totensor(randomcrop(rescale(randflip(normalize(data)))))
-
-    def deprocess(self, data):
-        tonumpy = ToNumpy()
-        denomalize = Denomalize()
-        return denomalize(tonumpy(data))
 
     def train(self):
         mode = self.mode
         device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+        print('device :{}'.format(device))
 
         train_continue = self.train_continue
         num_epoch = self.num_epoch
@@ -147,10 +137,7 @@ class Train:
 
         dir_log_train = os.path.join(self.dir_log, self.scope, name_data, 'train')
 
-
-
-        dataset_train = Dataset(self.dir_data, direction=self.direction, data_type=self.data_type)
-
+        dataset_train = Dataset(self.dir_data, direction=self.direction, data_type=self.data_type,mode=self.mode)
         loader_train = torch.utils.data.DataLoader(dataset_train, batch_size=batch_size, shuffle=True, num_workers=8)
 
         num_train = len(dataset_train)
@@ -321,9 +308,8 @@ class Train:
 
     def test(self):
         mode = self.mode
-
+        device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         batch_size = self.batch_size
-        device = self.device
         gpu_ids = self.gpu_ids
 
         nch_in = self.nch_in
@@ -337,29 +323,16 @@ class Train:
         ## setup dataset
         dir_chck = os.path.join(self.dir_checkpoint, self.scope, name_data)
 
-        dir_result = os.path.join(self.dir_result, self.scope, name_data)
-        dir_result_save = os.path.join(dir_result, 'images')
-        if not os.path.exists(dir_result_save):
-            os.makedirs(dir_result_save)
-
-        dir_data_test = os.path.join(self.dir_data, self.name_data, 'test')
-
-        transform_test = transforms.Compose([Normalize(), ToTensor()])
-        transform_inv = transforms.Compose([ToNumpy(), Denomalize()])
-
-        dataset_test = Dataset(dir_data_test, data_type=self.data_type, transform=transform_test)
-
-        loader_test = torch.utils.data.DataLoader(dataset_test, batch_size=batch_size, shuffle=False, num_workers=8)
+        dataset_test = Dataset(self.dir_data, data_type=self.data_type,mode=self.mode)
+        loader_test = torch.utils.data.DataLoader(dataset_test, batch_size=1, shuffle=False, num_workers=8)
 
         num_test = len(dataset_test)
 
-        num_batch_test = int((num_test / batch_size) + ((num_test % batch_size) != 0))
-
         ## setup network
-        # netG_a2b = UNet(nch_in, nch_out, nch_ker, norm)
-        # netG_b2a = UNet(nch_in, nch_out, nch_ker, norm)
-        netG_a2b = ResNet(nch_in, nch_out, nch_ker, norm, nblk=self.nblk)
-        netG_b2a = ResNet(nch_in, nch_out, nch_ker, norm, nblk=self.nblk)
+        netG_a2b = UNet(nch_in, nch_out, nch_ker, norm)
+        netG_b2a = UNet(nch_in, nch_out, nch_ker, norm)
+        # netG_a2b = ResNet(nch_in, nch_out, nch_ker, norm, nblk=self.nblk)
+        # netG_b2a = ResNet(nch_in, nch_out, nch_ker, norm, nblk=self.nblk)
 
         init_net(netG_a2b, init_type='normal', init_gain=0.02, gpu_ids=gpu_ids)
         init_net(netG_b2a, init_type='normal', init_gain=0.02, gpu_ids=gpu_ids)
@@ -376,10 +349,11 @@ class Train:
             # netG_a2b.train()
             # netG_b2a.train()
 
-            gen_loss_l1_test = 0
             for i, data in enumerate(loader_test, 1):
                 input_a = data['dataA'].to(device)
                 input_b = data['dataB'].to(device)
+
+                print(input_a.shape,input_b.shape)
 
                 # forward netG
                 output_b = netG_a2b(input_a)
@@ -387,34 +361,28 @@ class Train:
 
                 recon_b = netG_a2b(output_a)
                 recon_a = netG_b2a(output_b)
+                
+                print(output_b.shape, output_a.shape, recon_a.shape,recon_a.shape)
+                
+                output_b = output_b.cpu().numpy().reshape(-1,)
+                output_a = output_a.cpu().numpy().reshape(-1,)
+                recon_b = recon_b.cpu().numpy().reshape(-1,)
+                recon_a = recon_a.cpu().numpy().reshape(-1,)
 
-                input_a = transform_inv(input_a)
-                input_b = transform_inv(input_b)
-                output_a = transform_inv(output_a)
-                output_b = transform_inv(output_b)
-                recon_a = transform_inv(recon_a)
-                recon_b = transform_inv(recon_b)
+                input_a = input_a.cpu().numpy().reshape(-1,)
+                input_b = input_b.cpu().numpy().reshape(-1,)
+                print(output_b.shape, output_a.shape, recon_a.shape,recon_a.shape)
 
-                for j in range(input_a.shape[0]):
-                    name = batch_size * (i - 1) + j
-                    fileset = {'name': name,
-                               'input_a': "%04d-input_a.png" % name,
-                               'input_b': "%04d-input_b.png" % name,
-                               'output_a': "%04d-output_a.png" % name,
-                               'output_b': "%04d-output_b.png" % name,
-                               'recon_a': "%04d-recon_a.png" % name,
-                               'recon_b': "%04d-recon_b.png" % name}
+                
+                librosa.output.write_wav('./result/input_a.wav',input_a,19661)
+                librosa.output.write_wav('./result/input_b.wav',input_b,19661)
 
-                    plt.imsave(os.path.join(dir_result_save, fileset['input_a']), input_a[j, :, :, :].squeeze())
-                    plt.imsave(os.path.join(dir_result_save, fileset['input_b']), input_b[j, :, :, :].squeeze())
-                    plt.imsave(os.path.join(dir_result_save, fileset['output_a']), output_a[j, :, :, :].squeeze())
-                    plt.imsave(os.path.join(dir_result_save, fileset['output_b']), output_b[j, :, :, :].squeeze())
-                    plt.imsave(os.path.join(dir_result_save, fileset['recon_a']), recon_a[j, :, :, :].squeeze())
-                    plt.imsave(os.path.join(dir_result_save, fileset['recon_b']), recon_b[j, :, :, :].squeeze())
+                librosa.output.write_wav('./result/rock2jazz.wav',output_b,19661)
+                librosa.output.write_wav('./result/jazz2rock.wav',output_a,19661)
+                librosa.output.write_wav('./result/recon_rock.wav',recon_b,19661)
+                librosa.output.write_wav('./result/recon_jazz.wav',recon_a,19661)
 
-                    append_index(dir_result, fileset)
 
-                    print("%d / %d" % (name + 1, num_test))
 
 
 def set_requires_grad(nets, requires_grad=False):
