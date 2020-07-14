@@ -29,17 +29,28 @@ class Dataset(Dataset):
        stuff<number>_density.pt
     """
 
-    def __init__(self, data_dir, direction='R2J', data_type='float32', nch=3, transform=[]):
+    def __init__(self, data_dir,mode, direction='R2J', data_type='float32', nch=3, transform=[]):
         self.transform = transform
         self.direction = direction
         self.data_type = data_type
         self.nch = nch
-        
-        tem_a = np.load(os.path.join(data_dir,'melon_rock_all.npy'))
-        tem_b = np.load(os.path.join(data_dir,'melon_jazz_all.npy'))
 
-        self.dataA = torch.from_numpy(tem_a).reshape(tem_a.shape[1],3,256,256)
-        self.dataB = torch.from_numpy(tem_b).reshape(tem_b.shape[1],3,256,256)
+        if mode == 'train':
+          tem_a = np.load(os.path.join(data_dir,'melon_rock_all.npy'))
+          tem_b = np.load(os.path.join(data_dir,'melon_jazz_all.npy'))
+
+          tem_a = tem_a.T
+          tem_b = tem_b.T
+
+        elif mode == 'test':
+          tem_a = np.load(os.path.join(data_dir,'melon_rock_all_test.npy'))
+          tem_b = np.load(os.path.join(data_dir,'melon_jazz_all_test.npy'))
+
+          tem_a = tem_a.T
+          tem_b = tem_b.T
+
+        self.dataA = torch.from_numpy(tem_a).reshape(tem_a.shape[0],3,256,256)
+        self.dataB = torch.from_numpy(tem_b).reshape(tem_b.shape[0],3,256,256)
 
 
     def __getitem__(self, index):
