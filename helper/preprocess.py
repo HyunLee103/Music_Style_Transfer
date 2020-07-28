@@ -3,6 +3,7 @@ import numpy as np
 import glob, os
 import pandas as pd
 import random
+import musdb
 from utils import *
 
 """
@@ -15,6 +16,10 @@ rate : sample rate
 mode : musdb or youtube
 
 """
+# load musdb
+mus = musdb.DB(root="/content/drive/My Drive/ADV_Project_Music_style_transform/new_dataset/musdb18") # root path
+mus_7 = musdb.DB(download=True)
+
 # musdb rock/band sound track list
 required_track = [4,5, 6, 7,11, 12, 14, 15, 17, 23, 24, 25, 27, 29, 30, 37, 38, 42, 43, 44, 46, 48, 52, 54, 55, 56, 57, 59, 60, 62, 63, 64, 65, 67, 71, 74, 77, 78, 80, 81, 85, 86, 91, 92, 93, 96, 98, 99, 101, 104, 107]
 
@@ -29,13 +34,20 @@ def db(wave):
     return 20*np.log10(np.sqrt((wave**2).mean()))
 
 
-def sample_music(duration,audio,rate,mode='musdb'):
+def sample_music(duration,audio,rate,inst,mode='musdb'):
     if mode == 'musdb':
         for track in tqdm(mus):
             if track.name in required_track_name:
-                audio = (track.targets['vocals'].audio + track.targets['bass'].audio + track.targets['other'].audio).T
+                if inst == 'vocals':
+                    audio = (track.targets['vocals'].audio).T
+                elif inst == 'other':
+                    audio = (track.targets['other'].audio).T
+                elif inst == 'bass':
+                    audio = (track.targets['bass'].audio).T
+
                 audio = librosa.resample(audio,44100,rate)
                 audio = librosa.core.to_mono(audio)
+
                 for _ in range(int(track.duration-1)):
                     start = (random.randrange(5,int(track.duration-5))) * rate
                     stop = start + (duration*rate)
@@ -64,3 +76,24 @@ def sample_music(duration,audio,rate,mode='musdb'):
             except:
                 cat = piano
         return cat
+
+
+
+"""
+sample music for inference 
+"""
+
+def sample_test(path,sr,duration):
+    audio, rate = librosa.load(path,sr=sr)
+    for d in tqdm(range(int(len(audio)/(sr*duration)))):
+        start = d * duration * sr
+        stop = start + (duration*sr)
+        result = audio[int(start):int(stop)]
+        result = result[:,np.newaxis]
+
+        try:
+            cat = np.concatenate((cat,result),axis=1)
+        except:
+            cat = result
+        
+    return cat.T
