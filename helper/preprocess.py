@@ -17,7 +17,7 @@ mode : musdb or youtube
 
 """
 # load musdb
-mus = musdb.DB(root="/content/drive/My Drive/ADV_Project_Music_style_transform/new_dataset/musdb18") # root path
+mus = musdb.DB(root="/content/drive/My Drive/ADV_Project_Music_style_transform/new_dataset/musdb18") # root dataset
 mus_7 = musdb.DB(download=True)
 
 # musdb rock/band sound track list
@@ -39,20 +39,21 @@ def sample_music(duration,audio,rate,inst,mode='musdb'):
         for track in tqdm(mus):
             if track.name in required_track_name:
                 if inst == 'vocals':
-                    audio = (track.targets['vocals'].audio).T
+                    sig = (track.targets['vocals'].audio).T
                 elif inst == 'other':
-                    audio = (track.targets['other'].audio).T
+                    sig = (track.targets['other'].audio).T
                 elif inst == 'bass':
-                    audio = (track.targets['bass'].audio).T
+                    sig = (track.targets['bass'].audio).T
 
-                audio = librosa.resample(audio,44100,rate)
-                audio = librosa.core.to_mono(audio)
+                sig = librosa.resample(sig,44100,rate)
+                sig = librosa.core.to_mono(sig)
 
-                for _ in range(int(track.duration-1)):
-                    start = (random.randrange(5,int(track.duration-5))) * rate
+                for d in range(int(track.duration-10)):
+                    start = (d+10) * duration * rate
                     stop = start + (duration*rate)
-                    result = audio[int(start):int(stop)]
-                    if db(result) < -30: continue
+                    result = sig[int(start):int(stop)]
+      
+                    if db(result) < -25: continue
 
                     result = result[:,np.newaxis]
 
@@ -60,22 +61,23 @@ def sample_music(duration,audio,rate,inst,mode='musdb'):
                         cat = np.concatenate((cat,result),axis=1)
                     except:
                         cat = result
-        return cat
+        return cat.T
     elif mode =='youtube':
-        length = int(len(audio)/rate-200) # -200, 끝부분 소리 X
-        iter = int(length/3)
+        length = int(len(audio)/rate)-200 # -200, 끝부분 소리 X
+        iter = int(length/duration)
         for d in tqdm(range(iter)):
-            start = (random.randrange(5,iter)) * rate
+            start = (d+1) * duration * rate
             stop = start + (duration*rate)
-            piano = audio[int(start):int(stop)]
-            if db(piano) < -30: continue
+            result = audio[int(start):int(stop)]
 
-            piano = piano[:,np.newaxis]
+            if db(result) < -25: continue
+
+            result = result[:,np.newaxis]
             try:
-                cat = np.concatenate((cat,piano),axis=1)
+                cat = np.concatenate((cat,result),axis=1)
             except:
-                cat = piano
-        return cat
+                cat = result
+        return cat.T
 
 
 
