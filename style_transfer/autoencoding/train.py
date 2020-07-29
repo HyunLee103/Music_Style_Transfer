@@ -28,42 +28,42 @@ args = {
     "dropout_rate": 0.0,
     
     # train
-    "n_epochs": 15,
-    "batch_size": 8,
+    "n_epochs": 100,
+    "batch_size": 4,
     "lr": 0.001
 }
 
 # custom for batch 8
-args = {
-    # encoder
-    "encoder_blocks": 2,
-    "encoder_layers": 10,
-    "encoder_channels": 128,
-    "latent_d": 64,
-    "encoder_func": 'relu',
+# args = {
+#     # encoder
+#     "encoder_blocks": 2,
+#     "encoder_layers": 10,
+#     "encoder_channels": 128,
+#     "latent_d": 64,
+#     "encoder_func": 'relu',
     
-    # decoder
-    "blocks": 2,
-    "layers": 10,
-    "kernel_size": 2, 
-    "skip_channels": 128,
-    "residual_channels": 128,
+#     # decoder
+#     "blocks": 2,
+#     "layers": 10,
+#     "kernel_size": 2, 
+#     "skip_channels": 128,
+#     "residual_channels": 128,
     
-    # discriminator
-    "n_datasets": 2,
-    "d_layers": 3,
-    "d_channels": 100,
-    "d_lambda": 0.01,
-    "dropout_rate": 0.0,
+#     # discriminator
+#     "n_datasets": 2,
+#     "d_layers": 3,
+#     "d_channels": 100,
+#     "d_lambda": 0.01,
+#     "dropout_rate": 0.0,
     
-    # train
-    "n_epochs": 15,
-    "batch_size": 8,
-    "lr": 0.001
-}
+#     # train
+#     "n_epochs": 15,
+#     "batch_size": 8,
+#     "lr": 0.001
+# }
 
 # data load
-data_path = r"C:/Users/koo/Desktop/"
+data_path = r"/home/chdnjf103/"
 
 wavedata = WaveData([data_path + "piano.npy",
                      data_path + "musdb_other.npy",
@@ -139,11 +139,10 @@ for epoch in range(1, args["n_epochs"]+1):
             
             print(f"[{datanum}] {d_loss:0.4}, {loss:0.4}", end='  ')
     
-    
     torch.save({
         'encoder': encoder.state_dict(),
         'decoders': [decoder.state_dict() for decoder in decoders],
         'z_discr': z_discr.state_dict(),
         'decoder_optims': [optim.state_dict() for optim in optims],
         'z_discr_optim': z_discr_optim.state_dict()
-    }, data_path + f"{epoch}.pth")
+    }, data_path + f"/models/{epoch}.pth")
