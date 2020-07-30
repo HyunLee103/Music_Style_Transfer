@@ -15,13 +15,17 @@ class Generator(nn.Module):
         self.enc1 = CBR2d(1, 64, kernel_size=4, stride=2, padding=1 ,norm=None,relu=0.2)
         self.enc2 = CBR2d(64, 128, kernel_size=4, stride=2, padding=1 ,norm='inorm',relu=0.2)
         self.enc3 = CBR2d(128, 256, kernel_size=4, stride=2, padding=1 ,norm='inorm',relu=0.2)
-        self.enc4 = CBR2d(256, 256, kernel_size=4, stride=2, padding=1 ,norm='inorm',relu=0.2)
+        self.enc4 = CBR2d(256, 512, kernel_size=4, stride=2, padding=1 ,norm='inorm',relu=0.2)
+        self.enc5 = CBR2d(512, 512, kernel_size=4, stride=2, padding=1 ,norm='inorm',relu=0.2)
+        self.enc6 = CBR2d(512, 512, kernel_size=4, stride=2, padding=1 ,norm='inorm',relu=0.2)
         
         #upscaling
-        self.dec1 = DECBR2d(256,256,kernel_size=4,padding=1,stride=2,norm='inorm',relu=0.2)
-        self.dec2 = DECBR2d(512,128,kernel_size=4,padding=1,stride=2,norm='inorm',relu=0.2)
-        self.dec3 = DECBR2d(256,64,kernel_size=4,padding=1,stride=2,norm='inorm',relu=0.2)
-        self.dec4 = DECBR2d(128,1,kernel_size=4,padding=1,stride=2,norm=None,relu=None) 
+        self.dec1 = DECBR2d(512,512,kernel_size=4,padding=1,stride=2,norm='inorm',relu=0.2)
+        self.dec2 = DECBR2d(1024,512,kernel_size=4,padding=1,stride=2,norm='inorm',relu=0.2)
+        self.dec3 = DECBR2d(1024,256,kernel_size=4,padding=1,stride=2,norm='inorm',relu=0.2)
+        self.dec4 = DECBR2d(512,128,kernel_size=4,padding=1,stride=2,norm='inorm',relu=0.2) 
+        self.dec5 = DECBR2d(256,64,kernel_size=4,padding=1,stride=2,norm='inorm',relu=0.2) 
+        self.dec6 = DECBR2d(128,1,kernel_size=4,padding=1,stride=2,norm=None,relu=None) 
   
     def forward(self, x):
         # print(x.shape)
@@ -32,27 +36,21 @@ class Generator(nn.Module):
         enc3 = self.enc3(enc2)
         # print(enc3.shape)
         enc4 = self.enc4(enc3)
+        enc5 = self.enc5(enc4)
+        enc6 = self.enc6(enc5)
         # print(enc4.shape)
 
-        dec1 = self.dec1(enc4)
-        # print(dec1.shape)
-        cat2 = torch.cat((dec1,enc3),dim=1)
-        dec2 = self.dec2(cat2)
-        # print(dec2.shape)
-        cat3 = torch.cat((dec2,enc2),dim=1)
-        dec3 = self.dec3(cat3)
-        # print(dec3.shape)
-        cat4 = torch.cat((dec3,enc1),dim=1)
-        # print(cat4.shape)
-        dec4 = self.dec4(cat4)
-        x = torch.tanh(dec4)
+        dec1 = self.dec1(enc6)
+        dec2 = self.dec2(torch.cat([enc5, dec1], dim=1))
+        dec3 = self.dec3(torch.cat([enc4, dec2], dim=1))
+        dec4 = self.dec4(torch.cat([enc3, dec3], dim=1))
+        dec5 = self.dec5(torch.cat([enc2, dec4], dim=1))
+        dec6 = self.dec6(torch.cat([enc1, dec5], dim=1))
         # print(x.shape)
+        # x = torch.tanh(x)
         return x
 
-"""    
-S 네트워크 아웃풋으로 배치 당 dim=128 latent vector(OK!), 
-근데 padding = 'same'이 안되었음 -> 각각 16, 15 padding 줘서 해결
-"""
+
 class Siamese(nn.Module):
     def __init__(self,input_shape):
         super(Siamese, self).__init__()
@@ -61,30 +59,19 @@ class Siamese(nn.Module):
         self.leaky = nn.LeakyReLU(0.2, inplace=True)
         self.batchnorm = nn.BatchNorm2d(num_features=256)
 
-        self.g1 = nn.Conv2d(in_channels=c, out_channels=256, kernel_size=(h,9), stride=1, padding=0)
-        self.g2 = nn.Conv2d(in_channels=256, out_channels=256, kernel_size=(1,9), stride=(1,2),padding=(0,16))
-        self.g3 = nn.Conv2d(in_channels=256, out_channels=256, kernel_size=(1,7), stride=(1,2),padding=(0,15))
-        self.g4 = nn.Linear(6144, 128)
+        self.g1 = CBR2d(1, 64, kernel_size=4, stride=2, padding=1 ,norm='bnorm',relu=0.2)
+        self.g2 = CBR2d(64, 128, kernel_size=4, stride=2, padding=1 ,norm='bnorm',relu=0.2)
+        self.g3 = CBR2d(128, 256, kernel_size=4, stride=2, padding=1 ,norm='bnorm',relu=0.2)
+        self.g4 = nn.Linear(65536, 128)
             
     def forward(self, x):
         # print(x.shape)
         x = self.g1(x)
-        x = self.batchnorm(self.leaky(x))
-        # print(x.shape)
-        
-        ## g2, g3 에 same padding을 줘야한다.
         x = self.g2(x)
-        x = self.batchnorm(self.leaky(x))
-
-
         x = self.g3(x)
-        # print(x.shape)
-        x = self.batchnorm(self.leaky(x))
-
         x = x.view(x.shape[0],-1)
-        # print(x.shape)
         x = self.g4(x)
-        # print(x.shape)
+        x= torch.sigmoid(x)
         return x
 
 """
@@ -100,10 +87,11 @@ class Discriminator(nn.Module):
         h, w, c = input_shape
         
 
-        self.g1 = CBR2d(c, 64, kernel_size=4, stride=2, padding=1 ,norm=None,relu=0.2)
+        self.g1 = CBR2d(1, 64, kernel_size=4, stride=2, padding=1 ,norm='snorm',relu=0.2)
         self.g2 = CBR2d(64, 128, kernel_size=4, stride=2, padding=1 ,norm='snorm',relu=0.2)
         self.g3 = CBR2d(128, 256, kernel_size=4, stride=2, padding=1 ,norm='snorm',relu=0.2)
-        self.g4 = DenseSN(input_shape=73728)
+        self.g4 = CBR2d(256, 1, kernel_size=4, stride=2, padding=1 ,norm='snorm',relu=None)
+
         
     def forward(self, x):
         # print(x.shape)
@@ -113,8 +101,10 @@ class Discriminator(nn.Module):
         # print(x.shape)
         x = self.g3(x)
         # print(x.shape)
-        x = self.g4(x.view(x.shape[0],-1))
+        # x = self.g4(x.view(x.shape[0],-1))
+        x = self.g4(x)
         # print(x.shape)
+        # x = torch.tanh(x)
         return x
 
 """

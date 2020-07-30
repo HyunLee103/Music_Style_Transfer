@@ -21,10 +21,10 @@ parser.add_argument("--result_dir", default="./result", type=str, dest="result_d
 parser.add_argument("--decay_epoch", default = 500, type=int,dest ="decay_epoch")
 parser.add_argument("--test_path", default = './test', type=str,dest ="test_path")
 
-parser.add_argument("--only_D", default=3 , type=int, dest="only_D")
+parser.add_argument("--only_D", default=1 , type=int, dest="only_D")
 
 args = parser.parse_args()
 
 if __name__ == '__main__':
-    if args.mode == 'train':
+    if args.mode == 'train' or args.mode == 'test':
         train(args)

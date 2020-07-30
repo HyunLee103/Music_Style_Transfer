@@ -29,7 +29,6 @@ from torch.utils.data import Dataset, DataLoader
 
 #from tensordot_pytorch import tensordot_pytorch
 
-device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 #Hyperparameters
 
@@ -57,16 +56,21 @@ import torch.nn.functional as F
 from functools import partial
 import math
 import heapq
-import torchaudio
-from torchaudio.transforms import MelScale, Spectrogram
+# import torchaudio
+# from torchaudio.transforms import MelScale, Spectrogram
+
+from torch.optim.optimizer import Optimizer, required
+
+from torch import Tensor
+from torch.nn import Parameter
 
 #uncomment if you have a gpu
 # torch.set_default_tensor_type('torch.cuda.FloatTensor')
 
-specobj = Spectrogram(n_fft=6*hop, win_length=6*hop, hop_length=hop, pad=0, power=2, normalized=True)
-specfunc = specobj.forward
-melobj = MelScale(n_mels=hop, sample_rate=sr, f_min=0.)
-melfunc = melobj.forward
+# specobj = Spectrogram(n_fft=6*hop, win_length=6*hop, hop_length=hop, pad=0, power=2, normalized=True)
+# specfunc = specobj.forward
+# melobj = MelScale(n_mels=hop, sample_rate=sr, f_min=0.)
+# melfunc = melobj.forward
 
 def melspecfunc(waveform):
     specgram = specfunc(waveform)
@@ -329,6 +333,21 @@ def load(ckpt_dir, netG, netD, netS ,optimG,optimD):
 
     return netG,netD,netS ,optimG,optimD, epoch
 
+def load_test(ckpt_dir,netG):
+    if not os.path.exists(ckpt_dir):
+        epoch = 0
+    
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    ckpt_lst = os.listdir(ckpt_dir)
+    ckpt_lst.sort(key=lambda f: int(''.join(filter(str.isdigit, f))))
+
+    dict_model = torch.load('%s/%s' % (ckpt_dir, ckpt_lst[-1]), map_location=device)
+
+    netG.load_state_dict(dict_model['netG'])
+    epoch = int(ckpt_lst[-1].split('epoch')[1].split('.pth')[0])
+
+    return netG,epoch
+
 
 def init_weights(net, init_type='normal', init_gain=0.02):
 
@@ -365,7 +384,7 @@ def loss_travel(sa,sab,sa1,sab1):
     l1 = torch.mean(((sa-sa1)-(sab-sab1))**2)
     l2 = torch.mean(torch.sum(-(F.normalize(sa-sa1, p=2, dim=-1) * 
             F.normalize(sab-sab1, dim=-1)), dim=-1))
-    return l1 + l2
+    return Variable((l1 + l2),requires_grad=True)
 
 def loss_siamese(sa,sa1):
     logits = torch.sqrt(torch.sum(((sa-sa1)**2), axis=-1, keepdim=True))
@@ -413,6 +432,19 @@ def chopspec(spec):
 
 def l2normalize(v, eps=1e-12):
     return v / (v.norm() + eps)
+
+def set_requires_grad(nets, requires_grad=False):
+    """Set requies_grad=Fasle for all the networks to avoid unnecessary computations
+    Parameters:
+        nets (network list)   -- a list of networks
+        requires_grad (bool)  -- whether the networks require gradients or not
+    """
+    if not isinstance(nets, list):
+        nets = [nets]
+    for net in nets:
+        if net is not None:
+            for param in net.parameters():
+                param.requires_grad = requires_grad
 
 
 class SpectralNorm(nn.Module):
