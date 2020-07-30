@@ -28,9 +28,10 @@ args = {
     "dropout_rate": 0.0,
     
     # train
-    "n_epochs": 100,
+    "n_epochs": 300,
     "batch_size": 4,
-    "lr": 0.001
+    "lr": 0.001,
+    "load_epochs": 43
 }
 
 # custom for batch 8
@@ -84,9 +85,13 @@ optims = [torch.optim.Adam(chain(encoder.parameters(), decoder.parameters()), lr
           for decoder in decoders]
 
 # pth
-bestmodel = torch.load(data_path + "bestmodel_1.pth")
-encoder.load_state_dict(bestmodel['encoder_state'])
-decoders[0].load_state_dict(bestmodel['decoder_state'])
+bestmodel = torch.load(data_path + f"models/{args['load_epochs']}.pth")
+encoder.load_state_dict(bestmodel['encoder'])
+for i in range(decoders):
+    decoders[i].load_state_dict(bestmodel['decoders'][i])
+    optims[i].load_state_dict(bestmodel["decoder_optims"][i])
+z_discr.load_state_dict(bestmodel['z_discr'])
+z_discr_optim.load_state_dict(bestmodel['z_discr_optim'])
 
 def train_discr(encoder, z_discr, z_discr_optim, x_aug, datanum):
     ### train z_discr to A ###
@@ -126,7 +131,7 @@ def train_decoder(encoder, z_discr, decoder, decoder_optim,
     return loss_decoder.item()
 
 # train
-for epoch in range(1, args["n_epochs"]+1):
+for epoch in range(args['load_epochs'] + 1, args["n_epochs"] + args['load_epochs'] + 1):
     print(f"\nEpoch {epoch}")
     for i, (x, x_aug) in enumerate(dataloader):
         print(f"\nBatch {i+1}/{len(dataloader)}")
@@ -145,4 +150,4 @@ for epoch in range(1, args["n_epochs"]+1):
         'z_discr': z_discr.state_dict(),
         'decoder_optims': [optim.state_dict() for optim in optims],
         'z_discr_optim': z_discr_optim.state_dict()
-    }, data_path + f"/models/{epoch}.pth")
+    }, data_path + f"models/{epoch}.pth")
