@@ -5,71 +5,70 @@ import torch.nn.functional as F
 from itertools import chain
 
 # origin
-args = {
-    # encoder
-    "encoder_blocks": 3,
-    "encoder_layers": 10,
-    "encoder_channels": 128,
-    "latent_d": 64,
-    "encoder_func": 'relu',
-    
-    # decoder
-    "blocks": 4,
-    "layers": 14,
-    "kernel_size": 2, 
-    "skip_channels": 128,
-    "residual_channels": 128,
-    
-    # discriminator
-    "n_datasets": 4,
-    "d_layers": 3,
-    "d_channels": 100,
-    "d_lambda": 0.01,
-    "dropout_rate": 0.0,
-    
-    # train
-    "n_epochs": 300,
-    "batch_size": 4,
-    "lr": 0.001,
-    "load_epochs": 43
-}
-
-# custom for batch 8
 # args = {
 #     # encoder
-#     "encoder_blocks": 2,
+#     "encoder_blocks": 3,
 #     "encoder_layers": 10,
 #     "encoder_channels": 128,
 #     "latent_d": 64,
 #     "encoder_func": 'relu',
     
 #     # decoder
-#     "blocks": 2,
-#     "layers": 10,
+#     "blocks": 4,
+#     "layers": 14,
 #     "kernel_size": 2, 
 #     "skip_channels": 128,
 #     "residual_channels": 128,
     
 #     # discriminator
-#     "n_datasets": 2,
+#     "n_datasets": 4,
 #     "d_layers": 3,
 #     "d_channels": 100,
 #     "d_lambda": 0.01,
 #     "dropout_rate": 0.0,
     
 #     # train
-#     "n_epochs": 15,
-#     "batch_size": 8,
-#     "lr": 0.001
+#     "n_epochs": 300,
+#     "batch_size": 4,
+#     "lr": 0.001,
+#     "load_epochs": 43
 # }
+
+# custom for batch 8
+args = {
+    # encoder
+    "encoder_blocks": 2,
+    "encoder_layers": 10,
+    "encoder_channels": 128,
+    "latent_d": 64,
+    "encoder_func": 'relu',
+    
+    # decoder
+    "blocks": 2,
+    "layers": 10,
+    "kernel_size": 2, 
+    "skip_channels": 128,
+    "residual_channels": 128,
+    
+    # discriminator
+    "n_datasets": 2,
+    "d_layers": 3,
+    "d_channels": 100,
+    "d_lambda": 0.01,
+    "dropout_rate": 0.0,
+    
+    # train
+    "n_epochs": 200,
+    "batch_size": 8,
+    "lr": 0.001,
+    "load_epochs": 37
+}
 
 # data load
 data_path = r"/home/chdnjf103/"
 
-wavedata = WaveData([data_path + "piano.npy",
-                     data_path + "musdb_other.npy",
-                     data_path + "musdb_vocal.npy",
-                     data_path + "musdb_bass.npy"])
+wavedata = WaveData([data_path + "piano_cover.npy",
+                     data_path + "musdb_sample.npy",])
 
 dataloader = wavedata.get_loader(args["batch_size"],
                                  shuffle=True)
@@ -85,13 +84,14 @@ optims = [torch.optim.Adam(chain(encoder.parameters(), decoder.parameters()), lr
           for decoder in decoders]
 
 # pth
-bestmodel = torch.load(data_path + f"models/{args['load_epochs']}.pth")
+bestmodel = torch.load(data_path + f"{args['load_epochs']}.pth")
 encoder.load_state_dict(bestmodel['encoder'])
-for i in range(decoders):
+for i in range(len(decoders)):
     decoders[i].load_state_dict(bestmodel['decoders'][i])
     optims[i].load_state_dict(bestmodel["decoder_optims"][i])
 z_discr.load_state_dict(bestmodel['z_discr'])
 z_discr_optim.load_state_dict(bestmodel['z_discr_optim'])
+del bestmodel
 
 def train_discr(encoder, z_discr, z_discr_optim, x_aug, datanum):
     ### train z_discr to A ###
