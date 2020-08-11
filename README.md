@@ -80,15 +80,15 @@ Because the resolution of the audio separation was bad, we needed a separate sou
 
 ## Citation
     
-@misc{musdb18,
-  author       = {Rafii, Zafar and
+    @misc{musdb18,
+     author       = {Rafii, Zafar and
                   Liutkus, Antoine and
                   Fabian-Robert St{\"o}ter and
                   Mimilakis, Stylianos Ioannis and
                   Bittner, Rachel},
-  title        = {The {MUSDB18} corpus for music separation},
-  month        = dec,
-  year         = 2017,
-  doi          = {10.5281/zenodo.1117372},
-  url          = {https://doi.org/10.5281/zenodo.1117372}
-}
+     title        = {The {MUSDB18} corpus for music separation},
+     month        = dec,
+     year         = 2017,
+     doi          = {10.5281/zenodo.1117372},
+     url          = {https://doi.org/10.5281/zenodo.1117372} 
+    }
