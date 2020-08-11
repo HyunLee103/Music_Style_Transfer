@@ -7,3 +7,4 @@ We purely applied the cycle gan first. The resolution of sound was better than t
 but there was a problem with weak style conversion, which was the fundamental problem of cycle gan.
 
 ## MelGAN
+MelGAN is a model that reflects the structural loss between the input space of the generator and the generative space through the siamese network. However, since it is a model that applies to spectrogram, we concat input one-dimensional vector waveform axially to create a two-dimensional wave. Through this, not only can the melGAN be applied to the waveform, but also the dilation effect can be expected. This model was not satisfied with the result and we decided to try the autoencoder, not the generative model.
