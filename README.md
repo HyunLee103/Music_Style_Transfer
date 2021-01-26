@@ -3,10 +3,12 @@ music style transfer with Neural Network
 Aim to create an artificial neural network that changes music style,  
 eg) Beatles - hey jude -> hey jude Jazz ver.
 
-# Demo
+## Demo
 https://hyunlee103.tistory.com/80
 
+## Dataset
 
+Because the resolution of the audio separation was bad, we needed a separate sound source for the instrument. We used MUSDB18(https://github.com/sigsep/sigsep-mus-db) to satisfy this.
 
 
 
