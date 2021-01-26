@@ -10,11 +10,11 @@ https://hyunlee103.tistory.com/80
 Because the resolution of the audio separation was bad, we needed a separate sound source for the instrument. We used MUSDB18(https://github.com/sigsep/sigsep-mus-db) to satisfy this.
 
 ## Requirements
-CUDA 10.0
-python 3.6.10
-pytorch 1.7.1
-numpy 1.19.2
-opencv-python 4.5.1
+CUDA 10.0  
+python 3.6.10  
+pytorch 1.7.1  
+numpy 1.19.2  
+opencv-python 4.5.1  
 
 ## Usage
 You can choose between the time domain and the frequency domain. 
@@ -22,7 +22,7 @@ You can choose between the time domain and the frequency domain.
     python main.py --data_dir 'your datapath'
     
 
-## 2. Implementation models
+## Implementation models
 
 We tried three models, one in the time domain and two in the frequency domain.  
 
@@ -39,19 +39,19 @@ MelGAN is a model that reflects the structural loss between the input space of t
 We tried Universal Music Translation(https://github.com/facebookresearch/music-translation) for style transfer rock to jazz piano. While this paper translates musical instruments versus musical instruments such as violin, cello, and piano, we tried to transfer the whole rock music into jazz piano. Because this model is based on wavenet, learning and inference cost is very high.
 
 
-## 3. Limits and Future Studies
+## Limits and Future Studies
 
 There is a limit to the application of prior computer vision research due to differences in image and audio data. Due to the high cost of waveNet, it is difficult to increase the resolution of the results and the real-time service seems to be a long way to go. The future direction of research is to identify the data characteristics that affect the music style and create a model that takes those characteristics into account. Also, we need to make low cost models for high-resolution real-time models.
 
 
 ## Reference
-Musdb18 Dataset
-MUSIC SOURCE SEPARATION USING STACKED HOURGLASS NETWORK(Park et al, 2018 ISMR)
-Unpaired Image-to-Image Translation using Cycle-Consistent Adversarial Networks
-WaveNet: A Generative Model for Raw Audio(Deep Mind, 2016)
-META-LEARNING EXTRACTORS FOR MUSIC SOURCE SEPARATION(Samuel et al. 2020)
-MelGAN-VC: Voice Conversion and Audio Style Transfer on arbitrarily long samples using Spectrograms(Marco Pasini, 2020)
-A Universal Music Translation Network(Noam Mor el al, 2018) 
+Musdb18 Dataset  
+MUSIC SOURCE SEPARATION USING STACKED HOURGLASS NETWORK(Park et al, 2018 ISMR)  
+Unpaired Image-to-Image Translation using Cycle-Consistent Adversarial Networks  
+WaveNet: A Generative Model for Raw Audio(Deep Mind, 2016)  
+META-LEARNING EXTRACTORS FOR MUSIC SOURCE SEPARATION(Samuel et al. 2020)  
+MelGAN-VC: Voice Conversion and Audio Style Transfer on arbitrarily long samples using   Spectrograms(Marco Pasini, 2020)  
+A Universal Music Translation Network(Noam Mor el al, 2018)  
 
 
 ## Contributor 
