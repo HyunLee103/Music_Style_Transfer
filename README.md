@@ -11,10 +11,10 @@ Because the resolution of the audio separation was bad, we needed a separate sou
 
 ## Requirements
 - CUDA 10.0  
-python 3.6.10  
-pytorch 1.7.1  
-numpy 1.19.2  
-opencv-python 4.5.1  
+- python 3.6.10  
+- pytorch 1.7.1  
+- numpy 1.19.2  
+- opencv-python 4.5.1  
 
 ## Usage
 You can choose between the time domain and the frequency domain. 
@@ -45,13 +45,13 @@ There is a limit to the application of prior computer vision research due to dif
 
 
 ## Reference
-Musdb18 Dataset  
-MUSIC SOURCE SEPARATION USING STACKED HOURGLASS NETWORK(Park et al, 2018 ISMR)  
-Unpaired Image-to-Image Translation using Cycle-Consistent Adversarial Networks  
-WaveNet: A Generative Model for Raw Audio(Deep Mind, 2016)  
-META-LEARNING EXTRACTORS FOR MUSIC SOURCE SEPARATION(Samuel et al. 2020)  
-MelGAN-VC: Voice Conversion and Audio Style Transfer on arbitrarily long samples using   Spectrograms(Marco Pasini, 2020)  
-A Universal Music Translation Network(Noam Mor el al, 2018)  
+- Musdb18 Dataset  
+- MUSIC SOURCE SEPARATION USING STACKED HOURGLASS NETWORK(Park et al, 2018 ISMR)  
+- Unpaired Image-to-Image Translation using Cycle-Consistent Adversarial Networks  
+- WaveNet: A Generative Model for Raw Audio(Deep Mind, 2016)  
+- META-LEARNING EXTRACTORS FOR MUSIC SOURCE SEPARATION(Samuel et al. 2020)  
+- MelGAN-VC: Voice Conversion and Audio Style Transfer on arbitrarily long samples using Spectrograms(Marco Pasini, 2020)  
+- A Universal Music Translation Network(Noam Mor el al, 2018)  
 
 
 ## Contributor 
