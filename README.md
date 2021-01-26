@@ -1,13 +1,15 @@
 # Music Style Tranfer
 music style transfer with Neural Network(2020.03 ~ 2020.08).  
 Aim to create an artificial neural network that changes music style,  
-eg) Beatles-hey jude -> hey jude Jazz ver.
+eg) Beatles - hey jude -> hey jude Jazz ver.
 ### Team member
 Kyojung Koo(https://github.com/koo616), Sanghyung Jung(https://github.com/SangHyung-Jung), Hyun Lee
 
 
 # Overview
 Aim to create an artificial neural network that changes music style, eg) Beatles-hey jude -> hey jude Jazz ver.
+
+
 
 ## 1. Style transfer
 
@@ -77,6 +79,10 @@ As mentioned above, Audio reconstruction is necessary for transferring in the Fr
 
 ## 6. Dataset
 Because the resolution of the audio separation was bad, we needed a separate sound source for the instrument. We used MUSDB18(https://github.com/sigsep/sigsep-mus-db) to satisfy this.
+
+
+### Team member
+Kyojung Koo(https://github.com/koo616), Sanghyung Jung(https://github.com/SangHyung-Jung), Hyun Lee
 
 
 ## Citation
