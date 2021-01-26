@@ -7,7 +7,7 @@ eg) Beatles - hey jude -> hey jude Jazz ver.
 https://hyunlee103.tistory.com/80
 
 ## Dataset
-
+![image](https://user-images.githubusercontent.com/52783941/105868195-457aa500-6039-11eb-989c-d95efbd3d9f2.png)
 Because the resolution of the audio separation was bad, we needed a separate sound source for the instrument. We used MUSDB18(https://github.com/sigsep/sigsep-mus-db) to satisfy this.
 
 
