@@ -10,7 +10,7 @@ https://hyunlee103.tistory.com/80
 Because the resolution of the audio separation was bad, we needed a separate sound source for the instrument. We used MUSDB18(https://github.com/sigsep/sigsep-mus-db) to satisfy this.
 
 ## Requirements
-CUDA 10.0  
+- CUDA 10.0  
 python 3.6.10  
 pytorch 1.7.1  
 numpy 1.19.2  
