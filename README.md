@@ -19,8 +19,8 @@ opencv-python 4.5.1
 ## Usage
 You can choose between the time domain and the frequency domain. 
 
-    python 
-
+    python main.py --data_dir 'your datapath'
+    
 
 ## 2. Implementation models
 
@@ -44,7 +44,17 @@ We tried Universal Music Translation(https://github.com/facebookresearch/music-t
 There is a limit to the application of prior computer vision research due to differences in image and audio data. Due to the high cost of waveNet, it is difficult to increase the resolution of the results and the real-time service seems to be a long way to go. The future direction of research is to identify the data characteristics that affect the music style and create a model that takes those characteristics into account. Also, we need to make low cost models for high-resolution real-time models.
 
 
-### Team member
+## Reference
+Musdb18 Dataset
+MUSIC SOURCE SEPARATION USING STACKED HOURGLASS NETWORK(Park et al, 2018 ISMR)
+Unpaired Image-to-Image Translation using Cycle-Consistent Adversarial Networks
+WaveNet: A Generative Model for Raw Audio(Deep Mind, 2016)
+META-LEARNING EXTRACTORS FOR MUSIC SOURCE SEPARATION(Samuel et al. 2020)
+MelGAN-VC: Voice Conversion and Audio Style Transfer on arbitrarily long samples using Spectrograms(Marco Pasini, 2020)
+A Universal Music Translation Network(Noam Mor el al, 2018) 
+
+
+## Contributor 
 Kyojung Koo(https://github.com/koo616), Sanghyung Jung(https://github.com/SangHyung-Jung), Hyun Lee
 
 
