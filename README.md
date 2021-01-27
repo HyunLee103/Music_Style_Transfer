@@ -54,7 +54,9 @@ There is a limit to the application of prior computer vision research due to dif
 
 
 ## Contributor 
-Kyojung Koo(https://github.com/koo616), Sanghyung Jung(https://github.com/SangHyung-Jung), Hyun Lee
+- Kyojung Koo(https://github.com/koo616) 
+- Sanghyung Jung(https://github.com/SangHyung-Jung) 
+- Hyun Lee
 
 
 ## Citation
